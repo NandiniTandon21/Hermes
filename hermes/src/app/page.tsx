@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { CrossChainMessageForm } from "@/app/dashboard/page";
+import React, { useRef, useEffect, useState } from "react";
+import { CrossChainMessageForm, TransactionState } from "@/app/dashboard/page";
 import ThemeSwitcher from "@/components/theme-switcher";
 import { AnimatedGrid } from "@/components/ui/animated-grid";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 import { ArrowDownCircle } from "lucide-react";
+import { TransactionProgress } from "@/components/custom/transaction-progress";
 
 export default function Home() {
     // Refs for each section
@@ -13,6 +14,21 @@ export default function Home() {
     const formSectionRef = useRef<HTMLDivElement>(null);
     const formRef = useRef<HTMLDivElement>(null);
     const isFormInView = useInView(formRef, { once: true, amount: 0.3 });
+
+    // Transaction state for the progress component
+    const [transactionState, setTransactionState] = useState<TransactionState>({
+        sourceChain: '',
+        destinationChain: '',
+        sourceChainTxHash: null,
+        destinationChainTxHash: null,
+        message: null,
+        status: 'idle',
+        error: null
+    });
+
+    const handleTransactionUpdate = (transaction: TransactionState) => {
+        setTransactionState(transaction);
+    };
 
     // Scroll animation for the hero section
     const { scrollYProgress } = useScroll({
@@ -88,9 +104,9 @@ export default function Home() {
                 ref={formSectionRef}
                 className="min-h-screen w-full relative flex items-center bg-gradient-to-b from-background to-background/80 dark:from-background/80 dark:to-background"
             >
-                <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center">
-                    {/* Left side content */}
-                    <div className="w-full lg:w-1/2 mb-10 lg:mb-0 pr-0 lg:pr-8">
+                <div className="container mx-auto px-4 flex flex-col lg:flex-row items-start">
+                    {/* Left side content and transaction progress */}
+                    <div className="w-full lg:w-1/2 mb-10 lg:mb-0 pr-0 lg:pr-8 flex flex-col">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -104,7 +120,7 @@ export default function Home() {
                                 with our intuitive messaging platform. Hermes delivers your messages
                                 securely and efficiently across the blockchain universe.
                             </p>
-                            <div className="flex flex-wrap gap-4">
+                            <div className="flex flex-wrap gap-4 mb-8">
                                 <div className="flex items-center gap-2">
                                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary">
@@ -129,6 +145,32 @@ export default function Home() {
                                 </div>
                             </div>
                         </motion.div>
+
+                        {/* Transaction Progress - Now placed under the left column content */}
+                        <AnimatePresence>
+                            {transactionState.status !== 'idle' && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.4 }}
+                                    className="mt-4 mb-4"
+                                >
+                                    <h3 className="text-lg font-medium mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                                        Transaction Status
+                                    </h3>
+                                    <TransactionProgress
+                                        sourceChain={transactionState.sourceChain}
+                                        destinationChain={transactionState.destinationChain}
+                                        status={transactionState.status}
+                                        sourceChainTxHash={transactionState.sourceChainTxHash}
+                                        destinationChainTxHash={transactionState.destinationChainTxHash}
+                                        message={transactionState.message}
+                                        className="w-full"
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Right side form */}
@@ -140,7 +182,10 @@ export default function Home() {
                             transition={{ duration: 0.8, delay: 0.2 }}
                             className="bg-card/50 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-border max-w-lg w-full"
                         >
-                            <CrossChainMessageForm className="w-full max-w-none" />
+                            <CrossChainMessageForm
+                                className="w-full max-w-none"
+                                onTransactionUpdate={handleTransactionUpdate}
+                            />
                         </motion.div>
                     </div>
                 </div>

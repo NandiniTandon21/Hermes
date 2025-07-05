@@ -12,7 +12,9 @@ import { MotionSelect } from "@/components/custom/motion-select"
 import { X } from "lucide-react"; // Import X icon for dismiss button
 
 // Added interfaces for transaction data and message state
-interface TransactionState {
+export interface TransactionState {
+    sourceChain: string;
+    destinationChain: string;
     sourceChainTxHash: string | null;
     destinationChainTxHash: string | null;
     message: string | null;
@@ -22,18 +24,28 @@ interface TransactionState {
 
 export function CrossChainMessageForm({
                                           className,
+                                          onTransactionUpdate,
                                           ...props
-                                      }: React.ComponentProps<"form">) {
+                                      }: React.ComponentProps<"form"> & { onTransactionUpdate: (transaction: TransactionState) => void }) {
     const [selectedSource, setSelectedSource] = React.useState<string>('')
     const [selectedDestination, setSelectedDestination] = React.useState<string>('')
     const [messageText, setMessageText] = React.useState<string>('')
     const [transaction, setTransaction] = React.useState<TransactionState>({
+        sourceChain: '',
+        destinationChain: '',
         sourceChainTxHash: null,
         destinationChainTxHash: null,
         message: null,
         status: 'idle',
         error: null
     })
+
+    const updateTransaction = (newTransaction: TransactionState) => {
+        setTransaction(newTransaction);
+        if (onTransactionUpdate) {
+            onTransactionUpdate(newTransaction);
+        }
+    };
 
     // Check if the selected route is allowed (Ethereum Sepolia to Base Sepolia)
     const isAllowedRoute = React.useMemo(() =>
@@ -65,7 +77,9 @@ export function CrossChainMessageForm({
         setSelectedSource('');
         setSelectedDestination('');
         setMessageText('');
-        setTransaction({
+        updateTransaction({
+            sourceChain: '',
+            destinationChain: '',
             sourceChainTxHash: null,
             destinationChainTxHash: null,
             message: null,
@@ -115,8 +129,10 @@ export function CrossChainMessageForm({
 
         // Validation
         if (!selectedSource || !selectedDestination || !messageText.trim()) {
-            setTransaction({
+            updateTransaction({
                 ...transaction,
+                sourceChain: selectedSource,
+                destinationChain: selectedDestination,
                 status: 'error',
                 error: 'Please fill out all fields and ensure the message is not empty.'
             });
@@ -124,8 +140,10 @@ export function CrossChainMessageForm({
         }
 
         if (selectedSource === selectedDestination) {
-            setTransaction({
+            updateTransaction({
                 ...transaction,
+                sourceChain: selectedSource,
+                destinationChain: selectedDestination,
                 status: 'error',
                 error: 'Source and destination chains must be different'
             });
@@ -134,8 +152,10 @@ export function CrossChainMessageForm({
 
         // Check if the selected route is allowed
         if (!isAllowedRoute) {
-            setTransaction({
+            updateTransaction({
                 ...transaction,
+                sourceChain: selectedSource,
+                destinationChain: selectedDestination,
                 status: 'error',
                 error: 'Selected route is not allowed'
             });
@@ -144,39 +164,45 @@ export function CrossChainMessageForm({
 
         try {
             // Update state to indicate sending
-            setTransaction({
-                ...transaction,
+            const sendingTransaction: TransactionState = {
+                sourceChain: selectedSource,
+                destinationChain: selectedDestination,
+                message: messageText,
                 status: 'sending',
-                error: null
-            });
+                error: null,
+                sourceChainTxHash: null,
+                destinationChainTxHash: null
+            };
+            updateTransaction(sendingTransaction);
 
             // Simulate sending cross-chain message (this would be replaced with actual SDK calls)
             // In a real implementation, you would use Hyperlane/LayerZero/Wormhole SDK here
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             // Mock successful source chain transaction
-            setTransaction({
-                ...transaction,
+            const processingTransaction: TransactionState = {
+                ...sendingTransaction,
                 sourceChainTxHash: `0x${Math.random().toString(16).slice(2)}`,
                 status: 'processing',
-                message: messageText // Store the message during processing
-            });
+            };
+            updateTransaction(processingTransaction);
 
             // Simulate processing time for cross-chain message
             await new Promise(resolve => setTimeout(resolve, 3000));
 
             // Mock successful destination chain transaction
-            setTransaction({
-                sourceChainTxHash: transaction.sourceChainTxHash,
+            const completedTransaction: TransactionState = {
+                ...processingTransaction,
                 destinationChainTxHash: `0x${Math.random().toString(16).slice(2)}`,
-                message: messageText,
                 status: 'completed',
-                error: null
-            });
+            };
+            updateTransaction(completedTransaction);
 
         } catch (error) {
-            setTransaction({
+            updateTransaction({
                 ...transaction,
+                sourceChain: selectedSource,
+                destinationChain: selectedDestination,
                 status: 'error',
                 error: error instanceof Error ? error.message : 'An unknown error occurred'
             });
