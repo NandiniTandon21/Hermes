@@ -4,8 +4,9 @@ import React, { useRef, useState } from "react";
 import { CrossChainMessageForm, TransactionState } from "@/app/dashboard/page";
 import { AnimatedGrid } from "@/components/ui/animated-grid";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
-import { ArrowDownCircle } from "lucide-react";
+import { ArrowDownCircle, History } from "lucide-react";
 import TransactionProgress from "@/components/custom/transaction-progress";
+import TransactionHistory from "@/components/custom/transaction-history";
 
 export default function Home() {
     // Refs for each section
@@ -24,6 +25,9 @@ export default function Home() {
         status: 'idle',
         error: null
     });
+
+    // State for transaction history modal
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     const handleTransactionUpdate = (transaction: TransactionState) => {
         setTransactionState(transaction);
@@ -326,9 +330,20 @@ export default function Home() {
                 </div>
             </section>
 
+            {/* Transaction History Modal */}
+            <AnimatePresence>
+                {isHistoryOpen && (
+                    <TransactionHistory
+                        isOpen={isHistoryOpen}
+                        onClose={() => setIsHistoryOpen(false)}
+                        className="max-w-3xl"
+                    />
+                )}
+            </AnimatePresence>
+
             {/* Start New Transaction Button - with mellowed effects */}
             {transactionState.status === 'completed' && (
-                <div className="container mx-auto px-4 -mt-24 mb-20 flex justify-center">
+                <div className="container mx-auto px-4 -mt-24 mb-20 flex justify-center gap-4">
                     <motion.div
                         className="relative"
                         initial={{ opacity: 0 }}
@@ -384,6 +399,66 @@ export default function Home() {
                             onClick={resetTransaction}
                         >
                             Start New Transaction
+                        </motion.button>
+                    </motion.div>
+
+                    {/* View History Button */}
+                    <motion.div
+                        className="relative"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                    >
+                        {/* Subtle glow effect */}
+                        <motion.div
+                            className="absolute -inset-0.5 rounded-lg z-0 opacity-30"
+                            style={{
+                                background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)",
+                                backgroundSize: "200% 100%",
+                            }}
+                            animate={{
+                                backgroundPosition: ["200% 0", "-200% 0"]
+                            }}
+                            transition={{
+                                duration: 6,
+                                repeat: Infinity,
+                                ease: "linear"
+                            }}
+                        />
+
+                        {/* Button with subtle effects */}
+                        <motion.button
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{
+                                opacity: 1,
+                                y: 0,
+                                scale: [1, 1.02, 1],
+                                boxShadow: [
+                                    "0 0 10px rgba(255, 255, 255, 0.1)",
+                                    "0 0 15px rgba(255, 255, 255, 0.2)",
+                                    "0 0 10px rgba(255, 255, 255, 0.1)"
+                                ]
+                            }}
+                            transition={{
+                                duration: 0.4,
+                                scale: {
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                    times: [0, 0.5, 1]
+                                },
+                                boxShadow: {
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                    times: [0, 0.5, 1]
+                                }
+                            }}
+                            className="px-8 py-4 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all duration-300 text-base relative z-10 flex items-center gap-2"
+                            onClick={() => setIsHistoryOpen(true)}
+                        >
+                            <History className="h-5 w-5" />
+                            View History
                         </motion.button>
                     </motion.div>
                 </div>

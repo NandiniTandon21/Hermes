@@ -403,35 +403,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-black to-gray-800">
             <div className="container py-10">
-                {/* View History Button - Made more prominent */}
-                <div className="flex justify-center md:justify-end mb-8">
-                    <a
-                        href="/history"
-                        className="inline-flex items-center gap-2 bg-black/70 hover:bg-black/90 text-white py-3 px-6 rounded-lg border border-amber-400/30 transition-all hover:shadow-lg hover:shadow-amber-400/20 text-lg"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 8v4l3 3"></path>
-                            <circle cx="12" cy="12" r="10"></circle>
-                        </svg>
-                        <span className="drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">View Message History</span>
-                    </a>
-                </div>
-
                 <CrossChainMessageForm />
-
-                {/* Mobile history button at the bottom for better mobile UX */}
-                <div className="mt-8 flex justify-center md:hidden">
-                    <a
-                        href="/history"
-                        className="inline-flex items-center gap-2 bg-black/70 hover:bg-black/90 text-white py-3 px-6 rounded-lg border border-amber-400/30 transition-all"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 8v4l3 3"></path>
-                            <circle cx="12" cy="12" r="10"></circle>
-                        </svg>
-                        <span>View History</span>
-                    </a>
-                </div>
             </div>
         </div>
     )
