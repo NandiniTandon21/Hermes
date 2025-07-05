@@ -1,6 +1,8 @@
+"use client";
+
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from '@/utils/standard-utils';
+import {cn} from "@/lib/utils";
 
 export interface SelectProps {
     error?: string;
