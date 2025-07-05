@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
 
 interface TransactionProgressProps {
     sourceChain: string;
@@ -77,10 +77,10 @@ export default function TransactionProgress({
         <div className={`max-w-md mx-auto rounded-xl bg-black/90 p-4 ${className}`}>
             {/* Progress Line */}
             <div className="relative mb-6">
-                {/* Background Line - Gray Line */}
+                {/* Background Line */}
                 <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-500/50 rounded-full" />
 
-                {/* Progress Line - Solid Glowy White Line */}
+                {/* Progress Line */}
                 <motion.div
                     className="absolute top-4 left-0 h-0.5 bg-white rounded-full"
                     style={{
@@ -239,7 +239,7 @@ export default function TransactionProgress({
                     </div>
                 </div>
 
-                {/* Status Message */}
+                {/* Content Message */}
                 {message && (
                     <div className="bg-white/5 border border-white/20 rounded-lg p-3"
                          style={{

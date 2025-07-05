@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { X, ArrowRightLeft, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { TransactionState } from "@/app/dashboard/page";
+
 import { cn } from "@/lib/utils";
-import { Clock, X, ArrowRightLeft, ExternalLink, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TransactionState } from "@/app/dashboard/page";
 
 const chainLabels: Record<string, string> = {
     'ethereum-sepolia': 'Ethereum Sepolia',
@@ -249,14 +250,6 @@ export default function TransactionHistory({
                                                                         <p className="text-xs text-white/70">
                                                                             {chainLabels[transaction.sourceChain]} Transaction: {truncateHash(transaction.sourceChainTxHash)}
                                                                         </p>
-                                                                        {transaction.sourceChainTxHash && (
-                                                                            <button
-                                                                                className="text-white/70 hover:text-amber-400 transition-colors ml-auto"
-                                                                                aria-label="View transaction"
-                                                                            >
-                                                                                <ExternalLink className="h-3 w-3" />
-                                                                            </button>
-                                                                        )}
                                                                     </div>
                                                                 </div>
 
@@ -270,14 +263,6 @@ export default function TransactionHistory({
                                                                         <p className="text-xs text-white/70">
                                                                             {chainLabels[transaction.destinationChain]} Transaction: {truncateHash(transaction.destinationChainTxHash)}
                                                                         </p>
-                                                                        {transaction.destinationChainTxHash && (
-                                                                            <button
-                                                                                className="text-white/70 hover:text-amber-400 transition-colors ml-auto"
-                                                                                aria-label="View transaction"
-                                                                            >
-                                                                                <ExternalLink className="h-3 w-3" />
-                                                                            </button>
-                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -319,7 +304,6 @@ export default function TransactionHistory({
                                             transition: { duration: 0.2 }
                                         }}
                                     >
-                                        {/* Subtle glow effect */}
                                         <motion.div
                                             className="absolute -inset-0.5 rounded-md z-0 opacity-50"
                                             style={{
@@ -352,7 +336,6 @@ export default function TransactionHistory({
                                         transition: { duration: 0.2 }
                                     }}
                                 >
-                                    {/* Subtle glow effect */}
                                     <motion.div
                                         className="absolute -inset-0.5 rounded-md z-0 opacity-50"
                                         style={{

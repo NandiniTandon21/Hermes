@@ -1,21 +1,20 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { CrossChainMessageForm, TransactionState } from "@/app/dashboard/page";
-import { AnimatedGrid } from "@/components/ui/animated-grid";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 import { ArrowDownCircle, History } from "lucide-react";
-import TransactionProgress from "@/components/custom/transaction-progress";
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+
+import { AnimatedGrid } from "@/components/ui/animated-grid";
 import TransactionHistory from "@/components/custom/transaction-history";
+import TransactionProgress from "@/components/custom/transaction-progress";
+import { CrossChainMessageForm, TransactionState } from "@/app/dashboard/page";
 
 export default function Home() {
-    // Refs for each section
     const heroRef = useRef<HTMLDivElement>(null);
     const formSectionRef = useRef<HTMLDivElement>(null);
     const formRef = useRef<HTMLDivElement>(null);
     const isFormInView = useInView(formRef, { once: true, amount: 0.3 });
 
-    // Transaction state for the progress component
     const [transactionState, setTransactionState] = useState<TransactionState>({
         sourceChain: '',
         destinationChain: '',
@@ -26,14 +25,12 @@ export default function Home() {
         error: null
     });
 
-    // State for transaction history modal
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     const handleTransactionUpdate = (transaction: TransactionState) => {
         setTransactionState(transaction);
     };
 
-    // Scroll animation for the hero section
     const { scrollYProgress } = useScroll({
         target: heroRef,
         offset: ["start start", "end start"]
@@ -43,17 +40,13 @@ export default function Home() {
     const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
     const heroY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
-    // Handle scroll to form section
     const scrollToForm = () => {
         formSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    // Ref to access the form component for resetting
     const formComponentRef = useRef<any>(null);
 
-    // Function to reset both transaction state and form
     const resetTransaction = () => {
-        // Reset transaction state
         setTransactionState({
             sourceChain: '',
             destinationChain: '',
@@ -64,7 +57,6 @@ export default function Home() {
             error: null
         });
 
-        // Reset form if ref is available
         if (formComponentRef.current && formComponentRef.current.resetForm) {
             formComponentRef.current.resetForm();
         }
@@ -80,7 +72,7 @@ export default function Home() {
             >
                 {/* Split layout container */}
                 <div className="flex flex-col lg:flex-row min-h-screen w-full">
-                    {/* Left half - Stylish project name */}
+                    {/* Left half */}
                     <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-16 relative z-10">
                         <motion.h1
                             initial={{ opacity: 0, y: -50 }}
@@ -135,7 +127,7 @@ export default function Home() {
                         </motion.button>
                     </div>
 
-                    {/* Right half - Animated grid */}
+                    {/* Right half */}
                     <div className="w-full lg:w-1/2 h-[40vh] lg:h-screen relative overflow-hidden">
                         <AnimatedGrid className="w-full h-full" />
                     </div>
@@ -205,7 +197,7 @@ export default function Home() {
                             </motion.div>
                         </motion.div>
 
-                        {/* Transaction Progress - With smooth animation */}
+                        {/* Transaction Progress */}
                         <AnimatePresence mode="wait">
                             {transactionState.status !== 'idle' && (
                                 <motion.div
@@ -341,7 +333,7 @@ export default function Home() {
                 )}
             </AnimatePresence>
 
-            {/* Start New Transaction Button - with mellowed effects */}
+            {/* Start New Transaction Button */}
             {transactionState.status === 'completed' && (
                 <div className="container mx-auto px-4 -mt-24 mb-20 flex justify-center gap-4">
                     <motion.div
@@ -350,7 +342,6 @@ export default function Home() {
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.4 }}
                     >
-                        {/* Subtle glow effect */}
                         <motion.div
                             className="absolute -inset-0.5 rounded-lg z-0 opacity-30"
                             style={{
@@ -367,7 +358,6 @@ export default function Home() {
                             }}
                         />
 
-                        {/* Button with subtle effects */}
                         <motion.button
                             initial={{ opacity: 0, y: 10 }}
                             animate={{
@@ -409,7 +399,6 @@ export default function Home() {
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.4, delay: 0.2 }}
                     >
-                        {/* Subtle glow effect */}
                         <motion.div
                             className="absolute -inset-0.5 rounded-lg z-0 opacity-30"
                             style={{
@@ -426,7 +415,6 @@ export default function Home() {
                             }}
                         />
 
-                        {/* Button with subtle effects */}
                         <motion.button
                             initial={{ opacity: 0, y: 10 }}
                             animate={{

@@ -1,15 +1,14 @@
 "use client";
 
 import React from "react";
-import { motion, useInView } from "framer-motion";
-import { cn } from "@/lib/utils"
+import {motion, useInView} from "framer-motion";
 
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { MotionSelect } from "@/components/custom/motion-select"
+import {cn} from "@/lib/utils"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import {Button} from "@/components/ui/button"
+import {MotionSelect} from "@/components/custom/motion-select"
 
-// Added interfaces for transaction data and message state
 export interface TransactionState {
     sourceChain: string;
     destinationChain: string;
@@ -18,20 +17,19 @@ export interface TransactionState {
     message: string | null;
     status: 'idle' | 'sending' | 'processing' | 'completed' | 'error';
     error: string | null;
-    timestamp?: number; // Adding timestamp for history tracking
+    timestamp?: number;
 }
 
-// Wrap CrossChainMessageForm with forwardRef to expose methods to parent components
 export const CrossChainMessageForm = React.forwardRef<
     { resetForm: () => void },
     React.ComponentProps<"form"> & {
-        onTransactionUpdate: (transaction: TransactionState) => void
-    }
+    onTransactionUpdate: (transaction: TransactionState) => void
+}
 >(({
-    className,
-    onTransactionUpdate,
-    ...props
-}, ref) => {
+       className,
+       onTransactionUpdate,
+       ...props
+   }, ref) => {
     const [selectedSource, setSelectedSource] = React.useState<string>('')
     const [selectedDestination, setSelectedDestination] = React.useState<string>('')
     const [messageText, setMessageText] = React.useState<string>('')
@@ -45,14 +43,12 @@ export const CrossChainMessageForm = React.forwardRef<
         error: null
     })
 
-    // Reset form function that will be exposed via ref
     const resetForm = () => {
         setSelectedSource('');
         setSelectedDestination('');
         setMessageText('');
     };
 
-    // Expose resetForm method via ref
     React.useImperativeHandle(ref, () => ({
         resetForm
     }));
@@ -64,16 +60,13 @@ export const CrossChainMessageForm = React.forwardRef<
         }
     };
 
-    // Check if the selected route is allowed (Ethereum Sepolia to Base Sepolia)
     const isAllowedRoute = React.useMemo(() =>
-        selectedSource === 'ethereum-sepolia' &&
-        selectedDestination === 'base-sepolia',
-    [selectedSource, selectedDestination]);
+            selectedSource === 'ethereum-sepolia' &&
+            selectedDestination === 'base-sepolia',
+        [selectedSource, selectedDestination]);
 
-    // Reset message text when route changes to/from allowed state
     React.useEffect(() => {
         if (!isAllowedRoute) {
-            // Clear the message when a non-allowed route is selected
             setMessageText('');
         }
     }, [isAllowedRoute]);
@@ -81,70 +74,51 @@ export const CrossChainMessageForm = React.forwardRef<
     const isFormDisabled = false;
 
     const isSubmitDisabled =
-    !selectedSource ||
-    !selectedDestination ||
-    !messageText.trim() ||
-    !isAllowedRoute ||
-    transaction.status === 'sending' ||
-    transaction.status === 'processing';
+        !selectedSource ||
+        !selectedDestination ||
+        !messageText.trim() ||
+        !isAllowedRoute ||
+        transaction.status === 'sending' ||
+        transaction.status === 'processing';
 
-
-    // Handle dismissing the message delivered card and resetting the form
-    const handleDismissMessageCard = () => {
-        setSelectedSource('');
-        setSelectedDestination('');
-        setMessageText('');
-        updateTransaction({
-            sourceChain: '',
-            destinationChain: '',
-            sourceChainTxHash: null,
-            destinationChainTxHash: null,
-            message: null,
-            status: 'idle',
-            error: null
-        });
-    };
-
-    // Source chain options - all selectable
+// Source chain options
     const sourceChainOptions = [
-        { value: 'ethereum-sepolia', label: 'Ethereum Sepolia' },
-        { value: 'arbitrum-sepolia', label: 'Arbitrum Sepolia' },
-        { value: 'optimism-sepolia', label: 'Optimism Sepolia' },
-        { value: 'polygon-amoy', label: 'Polygon Amoy' },
-        { value: 'base-sepolia', label: 'Base Sepolia' },
+        {value: 'ethereum-sepolia', label: 'Ethereum Sepolia'},
+        {value: 'arbitrum-sepolia', label: 'Arbitrum Sepolia'},
+        {value: 'optimism-sepolia', label: 'Optimism Sepolia'},
+        {value: 'polygon-amoy', label: 'Polygon Amoy'},
+        {value: 'base-sepolia', label: 'Base Sepolia'},
     ]
 
-    // Destination chain options - all selectable
+    // Destination chain options
     const destinationChainOptions = [
-        { value: 'ethereum-sepolia', label: 'Ethereum Sepolia' },
-        { value: 'arbitrum-sepolia', label: 'Arbitrum Sepolia' },
-        { value: 'optimism-sepolia', label: 'Optimism Sepolia' },
-        { value: 'polygon-amoy', label: 'Polygon Amoy' },
-        { value: 'base-sepolia', label: 'Base Sepolia' },
+        {value: 'ethereum-sepolia', label: 'Ethereum Sepolia'},
+        {value: 'arbitrum-sepolia', label: 'Arbitrum Sepolia'},
+        {value: 'optimism-sepolia', label: 'Optimism Sepolia'},
+        {value: 'polygon-amoy', label: 'Polygon Amoy'},
+        {value: 'base-sepolia', label: 'Base Sepolia'},
     ]
 
     const formRef = React.useRef<HTMLFormElement>(null);
-    const isFormInView = useInView(formRef, { once: true, amount: 0.2 });
+    const isFormInView = useInView(formRef, {once: true, amount: 0.2});
 
     const staggerDelay = 0.1;
     const fadeInVariants = {
-        hidden: { opacity: 0, y: 20 },
+        hidden: {opacity: 0, y: 20},
         visible: (i: number) => ({
             opacity: 1,
             y: 0,
             transition: {
                 delay: i * staggerDelay,
                 duration: 0.5,
-                ease: [0.25, 0.1, 0.25, 1] // Use array, not string
+                ease: [0.25, 0.1, 0.25, 1]
             }
         })
     };
 
-    // Handle form submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation
         if (!selectedSource || !selectedDestination || !messageText.trim()) {
             const errorTransaction = {
                 ...transaction,
@@ -173,7 +147,6 @@ export const CrossChainMessageForm = React.forwardRef<
             return;
         }
 
-        // Check if the selected route is allowed
         if (!isAllowedRoute) {
             const errorTransaction = {
                 ...transaction,
@@ -189,7 +162,6 @@ export const CrossChainMessageForm = React.forwardRef<
         }
 
         try {
-            // Update state to indicate sending
             const sendingTransaction: TransactionState = {
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
@@ -308,7 +280,8 @@ export const CrossChainMessageForm = React.forwardRef<
             </motion.div>
 
             {/* Form fields */}
-            <div className={cn("grid gap-6", (transaction.status === 'sending' || transaction.status === 'processing') && "opacity-70")}>
+            <div
+                className={cn("grid gap-6", (transaction.status === 'sending' || transaction.status === 'processing') && "opacity-70")}>
                 {/* Source */}
                 <motion.div
                     className="grid gap-3"
@@ -377,8 +350,8 @@ export const CrossChainMessageForm = React.forwardRef<
                         radius="md"
                         name1={
                             transaction.status === 'sending' ? 'Sending...' :
-                            transaction.status === 'processing' ? 'Processing...' :
-                            'Send Message'
+                                transaction.status === 'processing' ? 'Processing...' :
+                                    'Send Message'
                         }
                         name2={"Deliver via Hermes"}
                         className="max-w-lg hover:from-amber-400 hover:via-yellow-500 hover:to-orange-500 hover:shadow-amber-500/40 hover:shadow-2xl hover:ring-2 hover:ring-amber-400/50 transition-all duration-700 text-white"
@@ -403,7 +376,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-black to-gray-800">
             <div className="container py-10">
-                <CrossChainMessageForm />
+                <CrossChainMessageForm/>
             </div>
         </div>
     )

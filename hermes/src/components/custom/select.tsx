@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
+
 import {cn} from "@/lib/utils";
 
 export interface SelectProps {
@@ -44,7 +45,7 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
             top: 0,
             left: 0,
             width: 0,
-            placement: 'bottom' // track placement
+            placement: 'bottom'
         });
 
         const filteredOptions = options.filter(option =>

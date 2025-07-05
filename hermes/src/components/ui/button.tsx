@@ -1,8 +1,9 @@
 "use client"
 import * as React from "react"
+import { ArrowRight } from "lucide-react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { ArrowRight } from "lucide-react"
+
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
@@ -60,9 +61,9 @@ interface SlideButtonProps {
     name1: string
     name2: string
     slideDelay?: number
-    maxWidth?: string // e.g., "max-w-xs", "max-w-sm", "max-w-md"
-    icon?: React.ComponentType<{ className?: string }> // Custom icon component
-    iconPosition?: "left" | "right" // Icon position
+    maxWidth?: string
+    icon?: React.ComponentType<{ className?: string }>
+    iconPosition?: "left" | "right"
 }
 
 function Button({
@@ -101,7 +102,7 @@ function Button({
     if (variant === "slide") {
         const { name1, name2, maxWidth = "max-w-sm", icon: CustomIcon = ArrowRight, iconPosition = "right" } = props as SlideButtonProps
 
-        // Get text size based on button size
+        // text size based on button size
         const getTextSize = (size: string | undefined) => {
             switch (size) {
                 case "xs": return "text-xs"
@@ -114,7 +115,7 @@ function Button({
             }
         }
 
-        // Get icon size based on button size
+        // icon size based on button size
         const getIconSize = (size: string | undefined) => {
             switch (size) {
                 case "xs": return "h-3 w-3"
@@ -127,7 +128,7 @@ function Button({
             }
         }
 
-        // Get padding based on button size for slide variant
+        // padding based on button size for slide variant
         const getSlidePadding = (size: string | undefined) => {
             switch (size) {
                 case "xs": return "px-3 py-1.5"
@@ -161,12 +162,12 @@ function Button({
                 disabled={isClicked}
                 {...(props as any)}
             >
-                {/* Content Container - Grows with text */}
+                {/* Content Container */}
                 <div className={cn(
                     "flex items-center justify-center gap-3 w-full min-w-0",
                     iconPosition === "left" ? "flex-row-reverse" : "flex-row"
                 )}>
-                    {/* Text Container - Centered and flexible */}
+                    {/* Text Container */}
                     <div className="relative flex-1 flex items-center justify-center min-w-0">
                         <span
                             className={`transition-all duration-500 text-center block ${textSizeClass} ${
@@ -184,7 +185,7 @@ function Button({
                         </span>
                     </div>
 
-                    {/* Icon Container - Position based on iconPosition prop */}
+                    {/* Icon Container */}
                     <div className={cn("relative flex-shrink-0", iconSizeClass)}>
                         <CustomIcon
                             className={cn(iconSizeClass, `absolute transition-all duration-1000 ${
@@ -216,7 +217,6 @@ function Button({
         )
     }
 
-    // For all other variants, render normally
     return (
         <Comp
             data-slot="button"

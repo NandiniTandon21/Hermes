@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useId, useState, useMemo } from "react"
-import { AnimatePresence, motion } from "framer-motion"
 import { TokenIcon } from '@web3icons/react'
+import {  useId, useState, useMemo } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -48,7 +48,6 @@ export function AnimatedGrid({
   ];
 
   function getRandomAdjacentCells(center: {row: number, col: number}, count: number = 5) {
-    // Always include center, then randomly pick from adjacent (up, down, left, right, diagonals)
     const directions = [
       [0,0], [0,1], [1,0], [0,-1], [-1,0], [1,1], [-1,-1], [1,-1], [-1,1]
     ];
@@ -56,16 +55,15 @@ export function AnimatedGrid({
     return shuffled.slice(0, count).map(([dr, dc]) => ({row: center.row + dr, col: center.col + dc}));
   }
 
-  // Memoize expandedCells so tokens are only randomized when hoveredCell changes
   const expandedCells = useMemo(() => {
     if (!hoveredCell) return [];
     const cells = getRandomAdjacentCells(hoveredCell, 5);
-    // Assign random tokens to each cell
+
     return cells.map(cell => ({
       ...cell,
       token: tokenIcons[Math.floor(Math.random() * tokenIcons.length)]
     }));
-  }, [hoveredCell]); // Only re-calculate when hoveredCell changes
+  }, [hoveredCell]);
 
   const handleMouseMove = (
     event: React.MouseEvent<SVGSVGElement, MouseEvent>
@@ -85,12 +83,6 @@ export function AnimatedGrid({
   const handleMouseLeave = () => {
     setHoveredCell(null)
     setMousePosition(null)
-  }
-
-  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
-    if (!hoveredCell) return
-    const key = `${hoveredCell.row}-${hoveredCell.col}`
-    setSpawnedTokens(prev => new Set(prev).add(key))
   }
 
   return (
@@ -119,7 +111,7 @@ export function AnimatedGrid({
         </pattern>
       </defs>
       <rect width="100%" height="100%" strokeWidth={0} fill={`url(#${id})`} />
-      {/* Highlight expanded cells and show icons inside */}
+      {/* Highlight expanded cells */}
       <AnimatePresence>
         {expandedCells.map(cell => (
           <motion.g

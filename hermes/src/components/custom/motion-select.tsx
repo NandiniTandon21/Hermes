@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown, Search } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 export interface MotionSelectOption {
     value: string;
@@ -44,14 +45,12 @@ export const MotionSelect = React.forwardRef<HTMLDivElement, MotionSelectProps>(
         const containerRef = React.useRef<HTMLDivElement>(null);
         const searchInputRef = React.useRef<HTMLInputElement>(null);
 
-        // Update internal state when external value changes
         React.useEffect(() => {
             if (value !== undefined) {
                 setSelectedValue(value);
             }
         }, [value]);
 
-        // Close dropdown when clicking outside
         React.useEffect(() => {
             const handleClickOutside = (e: MouseEvent) => {
                 if (
@@ -72,7 +71,6 @@ export const MotionSelect = React.forwardRef<HTMLDivElement, MotionSelectProps>(
             };
         }, [isOpen]);
 
-        // Focus search input when dropdown opens
         React.useEffect(() => {
             if (isOpen && searchable && searchInputRef.current) {
                 setTimeout(() => {
