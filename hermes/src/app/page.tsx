@@ -2,8 +2,8 @@
 
 import React, { useRef, useEffect } from "react";
 import { CrossChainMessageForm } from "@/app/dashboard/page";
-import ThemeSwitcher from "@/components/themeSwitcher";
-import { AnimatedGrid } from "@/components/ui/animatedGrid";
+import ThemeSwitcher from "@/components/theme-switcher";
+import { AnimatedGrid } from "@/components/ui/animated-grid";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { ArrowDownCircle } from "lucide-react";
 
@@ -132,15 +132,15 @@ export default function Home() {
                     </div>
 
                     {/* Right side form */}
-                    <div className="w-full lg:w-1/2">
+                    <div className="w-full lg:w-1/2 flex justify-center">
                         <motion.div
                             ref={formRef}
                             initial={{ opacity: 0, y: 40 }}
                             animate={isFormInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="bg-card/50 backdrop-blur-sm p-8 rounded-xl shadow-lg border border-border"
+                            className="bg-card/50 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-border max-w-lg w-full"
                         >
-                            <CrossChainMessageForm />
+                            <CrossChainMessageForm className="w-full max-w-none" />
                         </motion.div>
                     </div>
                 </div>
