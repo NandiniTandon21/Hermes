@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useId, useState } from "react"
+import { useEffect, useId, useState, useMemo } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { TokenIcon } from '@web3icons/react'
 
 import { cn } from "@/lib/utils"
 
@@ -16,8 +17,8 @@ interface GridPatternProps {
 }
 
 export function AnimatedGrid({
-  width = 40,
-  height = 40,
+  width = 64,
+  height = 64,
   x = 0,
   y = 0,
   strokeWidth = 1,
@@ -33,6 +34,38 @@ export function AnimatedGrid({
     x: number
     y: number
   } | null>(null)
+  const [spawnedTokens, setSpawnedTokens] = useState<Set<string>>(new Set())
+
+  const tokenIcons = [
+    { symbol: 'eth', variant: 'branded' },
+    { symbol: 'btc', variant: 'branded' },
+    { symbol: 'sol', variant: 'branded' },
+    { symbol: 'usdt', variant: 'branded' },
+    { symbol: 'usdc', variant: 'branded' },
+    { symbol: 'xrp', variant: 'branded' },
+    { symbol: 'ada', variant: 'branded' },
+    { symbol: 'bnb', variant: 'branded' },
+  ];
+
+  function getRandomAdjacentCells(center: {row: number, col: number}, count: number = 5) {
+    // Always include center, then randomly pick from adjacent (up, down, left, right, diagonals)
+    const directions = [
+      [0,0], [0,1], [1,0], [0,-1], [-1,0], [1,1], [-1,-1], [1,-1], [-1,1]
+    ];
+    const shuffled = directions.sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count).map(([dr, dc]) => ({row: center.row + dr, col: center.col + dc}));
+  }
+
+  // Memoize expandedCells so tokens are only randomized when hoveredCell changes
+  const expandedCells = useMemo(() => {
+    if (!hoveredCell) return [];
+    const cells = getRandomAdjacentCells(hoveredCell, 5);
+    // Assign random tokens to each cell
+    return cells.map(cell => ({
+      ...cell,
+      token: tokenIcons[Math.floor(Math.random() * tokenIcons.length)]
+    }));
+  }, [hoveredCell]); // Only re-calculate when hoveredCell changes
 
   const handleMouseMove = (
     event: React.MouseEvent<SVGSVGElement, MouseEvent>
@@ -52,6 +85,12 @@ export function AnimatedGrid({
   const handleMouseLeave = () => {
     setHoveredCell(null)
     setMousePosition(null)
+  }
+
+  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+    if (!hoveredCell) return
+    const key = `${hoveredCell.row}-${hoveredCell.col}`
+    setSpawnedTokens(prev => new Set(prev).add(key))
   }
 
   return (
@@ -80,21 +119,47 @@ export function AnimatedGrid({
         </pattern>
       </defs>
       <rect width="100%" height="100%" strokeWidth={0} fill={`url(#${id})`} />
+      {/* Highlight expanded cells and show icons inside */}
       <AnimatePresence>
-        {hoveredCell && (
-          <motion.rect
-            key={`${hoveredCell.row}-${hoveredCell.col}`}
-            x={hoveredCell.col * width}
-            y={hoveredCell.row * height}
-            width={width}
-            height={height}
+        {expandedCells.map(cell => (
+          <motion.g
+            key={`expanded-${cell.row}-${cell.col}`}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            fill="var(--highlighted-grid-color)"
-          />
-        )}
+          >
+            <rect
+              x={cell.col * width}
+              y={cell.row * height}
+              width={width}
+              height={height}
+              fill="black"
+              stroke="#fbbf24"
+              strokeWidth={3}
+              rx={16}
+              style={{ filter: 'drop-shadow(0 0 12px #fbbf24aa)' }}
+            />
+            <foreignObject
+              x={cell.col * width}
+              y={cell.row * height}
+              width={width}
+              height={height}
+              style={{ pointerEvents: 'none' }}
+            >
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100%',
+                backgroundColor: 'black',
+                borderRadius: '16px'
+              }}>
+                <TokenIcon symbol={cell.token.symbol} variant={cell.token.variant} size={36} />
+              </div>
+            </foreignObject>
+          </motion.g>
+        ))}
       </AnimatePresence>
       {mousePosition && (
         <motion.circle

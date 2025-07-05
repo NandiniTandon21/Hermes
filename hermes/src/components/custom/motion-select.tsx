@@ -108,16 +108,6 @@ export const MotionSelect = React.forwardRef<HTMLDivElement, MotionSelectProps>(
                 className={cn("relative w-full", containerClassName)}
                 ref={containerRef}
             >
-                {label && (
-                    <motion.label
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="block text-sm font-medium text-foreground mb-1.5"
-                    >
-                        {label}
-                    </motion.label>
-                )}
-
                 <motion.div
                     className="relative w-full"
                     ref={ref}
@@ -156,17 +146,17 @@ export const MotionSelect = React.forwardRef<HTMLDivElement, MotionSelectProps>(
                                 exit={{ y: -10, scaleY: 0.8 }}
                                 transition={{ duration: 0.15, ease: "easeOut" }}
                                 style={{ originY: "top" }}
-                                className="absolute z-50 mt-1 w-full bg-popover border border-border rounded-lg shadow-xl max-h-60 overflow-hidden"
+                                className="absolute z-50 mt-1 w-full bg-black/80 border border-white/10 rounded-lg shadow-xl max-h-60 overflow-hidden backdrop-blur-md"
                             >
                                 <div className="overflow-auto max-h-60">
                                     {searchable && (
-                                        <div className="sticky top-0 px-2 py-1.5 border-b border-border bg-popover">
+                                        <div className="sticky top-0 px-2 py-1.5 border-b border-white/10 bg-black/80">
                                             <div className="relative">
-                                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/60 pointer-events-none" />
                                                 <motion.input
                                                     ref={searchInputRef}
                                                     type="text"
-                                                    className="w-full py-2 pl-8 pr-3 text-sm rounded-md bg-background text-foreground border border-input focus:outline-none focus:ring-2 focus:ring-ring focus:border-input"
+                                                    className="w-full py-2 pl-8 pr-3 text-sm rounded-md bg-black/70 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-white/30"
                                                     placeholder="Search..."
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -180,7 +170,7 @@ export const MotionSelect = React.forwardRef<HTMLDivElement, MotionSelectProps>(
 
                                     <div className="py-1">
                                         {filteredOptions.length === 0 ? (
-                                            <div className="px-3 py-2 text-sm text-muted-foreground text-center">
+                                            <div className="px-3 py-2 text-sm text-white/70 text-center">
                                                 No options found
                                             </div>
                                         ) : (
@@ -193,12 +183,12 @@ export const MotionSelect = React.forwardRef<HTMLDivElement, MotionSelectProps>(
                                                         exit={{ x: -10 }}
                                                         transition={{ delay: index * 0.03, duration: 0.15 }}
                                                         className={cn(
-                                                            "px-3 py-2 text-sm flex items-center justify-between transition-colors duration-150",
+                                                            "px-3 py-2 text-sm flex items-center justify-between transition-colors duration-150 text-white",
                                                             option.disabled
-                                                                ? "cursor-not-allowed hover:bg-accent/50 hover:text-accent-foreground/80" // Allow hover but with reduced opacity
-                                                                : "cursor-pointer hover:bg-accent hover:text-accent-foreground",
+                                                                ? "cursor-not-allowed text-white/50 hover:bg-black/50" // Disabled state with reduced opacity
+                                                                : "cursor-pointer hover:bg-black/60 hover:text-white",
                                                             option.value === selectedValue
-                                                                ? "bg-accent text-accent-foreground font-medium"
+                                                                ? "bg-black/70 text-white font-medium border-l-2 border-amber-400" // Selected state
                                                                 : ""
                                                         )}
                                                         onClick={() => handleSelect(option)}

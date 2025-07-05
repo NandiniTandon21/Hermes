@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils"
-import { toast } from 'sonner';
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { MotionSelect } from "@/components/custom/motion-select"
-import { X } from "lucide-react"; // Import X icon for dismiss button
 
 // Added interfaces for transaction data and message state
 export interface TransactionState {
@@ -20,13 +18,20 @@ export interface TransactionState {
     message: string | null;
     status: 'idle' | 'sending' | 'processing' | 'completed' | 'error';
     error: string | null;
+    timestamp?: number; // Adding timestamp for history tracking
 }
 
-export function CrossChainMessageForm({
-                                          className,
-                                          onTransactionUpdate,
-                                          ...props
-                                      }: React.ComponentProps<"form"> & { onTransactionUpdate: (transaction: TransactionState) => void }) {
+// Wrap CrossChainMessageForm with forwardRef to expose methods to parent components
+export const CrossChainMessageForm = React.forwardRef<
+    { resetForm: () => void },
+    React.ComponentProps<"form"> & {
+        onTransactionUpdate: (transaction: TransactionState) => void
+    }
+>(({
+    className,
+    onTransactionUpdate,
+    ...props
+}, ref) => {
     const [selectedSource, setSelectedSource] = React.useState<string>('')
     const [selectedDestination, setSelectedDestination] = React.useState<string>('')
     const [messageText, setMessageText] = React.useState<string>('')
@@ -39,6 +44,18 @@ export function CrossChainMessageForm({
         status: 'idle',
         error: null
     })
+
+    // Reset form function that will be exposed via ref
+    const resetForm = () => {
+        setSelectedSource('');
+        setSelectedDestination('');
+        setMessageText('');
+    };
+
+    // Expose resetForm method via ref
+    React.useImperativeHandle(ref, () => ({
+        resetForm
+    }));
 
     const updateTransaction = (newTransaction: TransactionState) => {
         setTransaction(newTransaction);
@@ -129,36 +146,45 @@ export function CrossChainMessageForm({
 
         // Validation
         if (!selectedSource || !selectedDestination || !messageText.trim()) {
-            updateTransaction({
+            const errorTransaction = {
                 ...transaction,
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
                 status: 'error',
-                error: 'Please fill out all fields and ensure the message is not empty.'
-            });
+                error: 'Please fill out all fields and ensure the message is not empty.',
+                timestamp: Date.now()
+            };
+            updateTransaction(errorTransaction);
+            saveTransactionToHistory(errorTransaction);
             return;
         }
 
         if (selectedSource === selectedDestination) {
-            updateTransaction({
+            const errorTransaction = {
                 ...transaction,
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
                 status: 'error',
-                error: 'Source and destination chains must be different'
-            });
+                error: 'Source and destination chains must be different',
+                timestamp: Date.now()
+            };
+            updateTransaction(errorTransaction);
+            saveTransactionToHistory(errorTransaction);
             return;
         }
 
         // Check if the selected route is allowed
         if (!isAllowedRoute) {
-            updateTransaction({
+            const errorTransaction = {
                 ...transaction,
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
                 status: 'error',
-                error: 'Selected route is not allowed'
-            });
+                error: 'Selected route is not allowed',
+                timestamp: Date.now()
+            };
+            updateTransaction(errorTransaction);
+            saveTransactionToHistory(errorTransaction);
             return;
         }
 
@@ -171,7 +197,8 @@ export function CrossChainMessageForm({
                 status: 'sending',
                 error: null,
                 sourceChainTxHash: null,
-                destinationChainTxHash: null
+                destinationChainTxHash: null,
+                timestamp: Date.now()
             };
             updateTransaction(sendingTransaction);
 
@@ -198,14 +225,53 @@ export function CrossChainMessageForm({
             };
             updateTransaction(completedTransaction);
 
+            // Save completed transaction to history
+            saveTransactionToHistory(completedTransaction);
+
         } catch (error) {
-            updateTransaction({
+            const errorTransaction = {
                 ...transaction,
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
                 status: 'error',
-                error: error instanceof Error ? error.message : 'An unknown error occurred'
-            });
+                error: error instanceof Error ? error.message : 'An unknown error occurred',
+                timestamp: Date.now()
+            };
+            updateTransaction(errorTransaction);
+            saveTransactionToHistory(errorTransaction);
+        }
+    };
+
+    // Function to save transaction to localStorage
+    const saveTransactionToHistory = (transaction: TransactionState) => {
+        if (typeof window === 'undefined') return; // Skip on server-side rendering
+
+        try {
+            // Only save transactions that have status other than 'idle'
+            if (transaction.status === 'idle') return;
+
+            // Get existing transactions from localStorage
+            const existingTransactionsJson = localStorage.getItem('hermesTransactions');
+            let existingTransactions: TransactionState[] = [];
+
+            if (existingTransactionsJson) {
+                existingTransactions = JSON.parse(existingTransactionsJson);
+            }
+
+            // Add new transaction to the beginning of the array (most recent first)
+            existingTransactions.unshift(transaction);
+
+            // Limit the number of transactions stored to prevent localStorage overflow
+            const maxHistorySize = 20;
+            if (existingTransactions.length > maxHistorySize) {
+                existingTransactions = existingTransactions.slice(0, maxHistorySize);
+            }
+
+            // Save back to localStorage
+            localStorage.setItem('hermesTransactions', JSON.stringify(existingTransactions));
+
+        } catch (error) {
+            console.error("Failed to save transaction to history:", error);
         }
     };
 
@@ -222,7 +288,7 @@ export function CrossChainMessageForm({
     return (
         <motion.form
             ref={formRef}
-            className={cn("max-w-md mx-auto flex flex-col gap-6", className)}
+            className={cn("max-w-md mx-auto flex flex-col gap-6 bg-black/25 backdrop-blur-lg p-8 rounded-xl border border-white/10 shadow-lg text-white", className)}
             initial="hidden"
             animate={isFormInView ? "visible" : "hidden"}
             onSubmit={handleSubmit}
@@ -234,8 +300,8 @@ export function CrossChainMessageForm({
                 custom={0}
                 variants={fadeInVariants}
             >
-                <h1 className="text-2xl font-bold">Explore Interoperability</h1>
-                <p className="text-muted-foreground text-sm text-balance">
+                <h1 className="text-2xl font-bold text-white drop-shadow-glow">Explore Interoperability</h1>
+                <p className="text-white/80 text-sm text-balance">
                     Choose your chains. Compose your message.<br/>
                     Watch it fly across blockchains.
                 </p>
@@ -256,6 +322,7 @@ export function CrossChainMessageForm({
                             onChange={(value) => setSelectedSource(value)}
                             options={sourceChainOptions}
                             disabled={isFormDisabled}
+                            className="text-white bg-black/50"
                         />
                     </div>
                 </motion.div>
@@ -272,6 +339,7 @@ export function CrossChainMessageForm({
                         onChange={(value) => setSelectedDestination(value)}
                         options={destinationChainOptions}
                         disabled={isFormDisabled}
+                        className="text-white bg-black/50"
                     />
                 </motion.div>
 
@@ -282,7 +350,7 @@ export function CrossChainMessageForm({
                     variants={fadeInVariants}
                 >
                     <div className="flex items-center">
-                        <Label htmlFor="message">Message</Label>
+                        <Label htmlFor="message" className="text-white">Message</Label>
                     </div>
                     <Input
                         id="message"
@@ -293,6 +361,7 @@ export function CrossChainMessageForm({
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         disabled={!isAllowedRoute || isFormDisabled}
+                        className="text-white placeholder:text-white/50 bg-black/50 border-white/20 focus:ring-2 focus:ring-amber-400/30"
                     />
                 </motion.div>
 
@@ -312,117 +381,11 @@ export function CrossChainMessageForm({
                             'Send Message'
                         }
                         name2={"Deliver via Hermes"}
-                        className="max-w-lg hover:from-amber-400 hover:via-yellow-500 hover:to-orange-500 hover:shadow-amber-500/40 hover:shadow-2xl hover:ring-2 hover:ring-amber-400/50 transition-all duration-700"
+                        className="max-w-lg hover:from-amber-400 hover:via-yellow-500 hover:to-orange-500 hover:shadow-amber-500/40 hover:shadow-2xl hover:ring-2 hover:ring-amber-400/50 transition-all duration-700 text-white"
                         disabled={isSubmitDisabled}
                     />
                 </motion.div>
             </div>
-
-            {/* Transaction Status */}
-            {(transaction.status !== 'idle') && (
-                <motion.div
-                    className="mt-4 p-4 rounded-lg border bg-card"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-medium">
-                            {transaction.status === 'sending' && 'Sending Message...'}
-                            {transaction.status === 'processing' && 'Processing Cross-Chain Transfer...'}
-                            {transaction.status === 'completed' && 'Message Delivered!'}
-                            {transaction.status === 'error' && 'Error'}
-                        </h3>
-
-                        {/* Only show dismiss button when message is delivered (completed) */}
-                        {transaction.status === 'completed' && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 rounded-full"
-                                onClick={handleDismissMessageCard}
-                            >
-                                <X className="h-4 w-4" />
-                                <span className="sr-only">Dismiss</span>
-                            </Button>
-                        )}
-                    </div>
-
-                    {transaction.error && (
-                        <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-sm">
-                            {transaction.error}
-                        </div>
-                    )}
-
-                    {/* Transaction Details Section */}
-                    <div className="space-y-3 border-t pt-3 mt-3">
-                        {/* Source Chain Transaction - Always show during processing/completed */}
-                        {transaction.sourceChainTxHash && (
-                            <div className="mb-2">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-muted-foreground">Source Chain Transaction:</p>
-                                    {transaction.status === 'sending' && (
-                                        <span className="text-xs bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded-full">Pending</span>
-                                    )}
-                                    {(transaction.status === 'processing' || transaction.status === 'completed') && (
-                                        <span className="text-xs bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full">Confirmed</span>
-                                    )}
-                                </div>
-                                <p className="text-xs font-mono bg-muted p-2 mt-1 rounded overflow-x-auto">
-                                    {transaction.sourceChainTxHash}
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Destination Chain Transaction - Show during completed */}
-                        {transaction.destinationChainTxHash && (
-                            <div className="mb-2">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-muted-foreground">Destination Chain Transaction:</p>
-                                    <span className="text-xs bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full">Confirmed</span>
-                                </div>
-                                <p className="text-xs font-mono bg-muted p-2 mt-1 rounded overflow-x-auto">
-                                    {transaction.destinationChainTxHash}
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Message - Show during all phases */}
-                        {transaction.message && (
-                            <div className="mt-3">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-medium text-muted-foreground">Message Content:</p>
-                                    {transaction.status === 'sending' && (
-                                        <span className="text-xs bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded-full">Sending</span>
-                                    )}
-                                    {transaction.status === 'processing' && (
-                                        <span className="text-xs bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full">In Transit</span>
-                                    )}
-                                    {transaction.status === 'completed' && (
-                                        <span className="text-xs bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full">Delivered</span>
-                                    )}
-                                </div>
-                                <div className="bg-muted p-2 mt-1 rounded text-sm">
-                                    <p className="whitespace-pre-wrap">{transaction.message}</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Replaced auto-reset notification with Done button for completed transactions */}
-                    {transaction.status === 'completed' && (
-                        <div className="mt-4 text-center">
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={handleDismissMessageCard}
-                            >
-                                Done - Start New Transaction
-                            </Button>
-                        </div>
-                    )}
-                </motion.div>
-            )}
 
             {/* Footer */}
             <motion.div
@@ -434,12 +397,42 @@ export function CrossChainMessageForm({
             </motion.div>
         </motion.form>
     )
-}
+})
 
 export default function DashboardPage() {
     return (
-        <div className="container py-10">
-            <CrossChainMessageForm />
+        <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-black to-gray-800">
+            <div className="container py-10">
+                {/* View History Button - Made more prominent */}
+                <div className="flex justify-center md:justify-end mb-8">
+                    <a
+                        href="/history"
+                        className="inline-flex items-center gap-2 bg-black/70 hover:bg-black/90 text-white py-3 px-6 rounded-lg border border-amber-400/30 transition-all hover:shadow-lg hover:shadow-amber-400/20 text-lg"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 8v4l3 3"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <span className="drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">View Message History</span>
+                    </a>
+                </div>
+
+                <CrossChainMessageForm />
+
+                {/* Mobile history button at the bottom for better mobile UX */}
+                <div className="mt-8 flex justify-center md:hidden">
+                    <a
+                        href="/history"
+                        className="inline-flex items-center gap-2 bg-black/70 hover:bg-black/90 text-white py-3 px-6 rounded-lg border border-amber-400/30 transition-all"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 8v4l3 3"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <span>View History</span>
+                    </a>
+                </div>
+            </div>
         </div>
     )
 }
