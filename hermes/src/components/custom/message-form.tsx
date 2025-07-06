@@ -8,6 +8,7 @@ import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Button} from "@/components/ui/button"
 import {MotionSelect} from "@/components/custom/motion-select"
+import {HyperlaneClientFactory, crossChainHyperlaneMessage, crossChainHyperlaneGasPayment} from "@/lib/hyperlane"
 
 export interface TransactionState {
     sourceChain: string;
@@ -62,7 +63,7 @@ export const CrossChainMessageForm = React.forwardRef<
 
     const isAllowedRoute = React.useMemo(() =>
             selectedSource === 'ethereum-sepolia' &&
-            selectedDestination === 'base-sepolia',
+            selectedDestination === 'fuji-testnet',
         [selectedSource, selectedDestination]);
 
     React.useEffect(() => {
@@ -85,16 +86,38 @@ export const CrossChainMessageForm = React.forwardRef<
     const sourceChainOptions = [
         {value: 'ethereum-sepolia', label: 'Ethereum Sepolia'},
         {value: 'arbitrum-sepolia', label: 'Arbitrum Sepolia'},
-        {value: 'optimism-sepolia', label: 'Optimism Sepolia'},
+        {value: 'fuji-testnet', label: 'Fuji Testnet'},
         {value: 'polygon-amoy', label: 'Polygon Amoy'},
         {value: 'base-sepolia', label: 'Base Sepolia'},
     ]
+
+    interface ChainConfig {
+        chainId: number;
+        mailboxAddress: string;
+        igpAddress: string;
+    }
+
+    const testRecipientAddress: string = "0x00000000000000000000000036FdA966CfffF8a9Cdc814f546db0e6378bFef35" // Test recipient address by hyperlane
+    const testRecipientGasAmount: number = 100000; // Gas amount for the test recipient
+
+    const chainInfo: Record<string, ChainConfig> = {
+        'ethereum-sepolia': {
+            'chainId': 11155111,
+            'mailboxAddress': '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
+            'igpAddress': '0xF987d7edcb5890cB321437d8145E3D51131298b6'
+        },
+        'fuji-testnet': {
+            'chainId': 43113,
+            'mailboxAddress': '0xCC737a94FecaeC165AbCf12dED095BB13F037685',
+            'igpAddress': '0xF90cB82a76492614D07B82a7658917f3aC811Ac1'
+        }
+    }
 
     // Destination chain options
     const destinationChainOptions = [
         {value: 'ethereum-sepolia', label: 'Ethereum Sepolia'},
         {value: 'arbitrum-sepolia', label: 'Arbitrum Sepolia'},
-        {value: 'optimism-sepolia', label: 'Optimism Sepolia'},
+        {value: 'fuji-testnet', label: 'Fuji Testnet'},
         {value: 'polygon-amoy', label: 'Polygon Amoy'},
         {value: 'base-sepolia', label: 'Base Sepolia'},
     ]
@@ -115,6 +138,7 @@ export const CrossChainMessageForm = React.forwardRef<
             }
         })
     };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -177,25 +201,30 @@ export const CrossChainMessageForm = React.forwardRef<
             };
             updateTransaction(sendingTransaction);
 
-            // Simulate sending cross-chain message (this would be replaced with actual SDK calls)
-            // In a real implementation, you would use Hyperlane/LayerZero/Wormhole SDK here
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const srcChainInfo = chainInfo[selectedSource];
+            const dstChainInfo = chainInfo[selectedDestination];
 
-            // Mock successful source chain transaction
+            const hyperlaneClient = await HyperlaneClientFactory(srcChainInfo.chainId);
+            const messagetx = await crossChainHyperlaneMessage(hyperlaneClient, dstChainInfo.chainId, testRecipientAddress, messageText, srcChainInfo.mailboxAddress);
+            console.log(messagetx);
+
             const processingTransaction: TransactionState = {
                 ...sendingTransaction,
-                sourceChainTxHash: `0x${Math.random().toString(16).slice(2)}`,
+                sourceChainTxHash: messagetx.hash,
                 status: 'processing',
             };
             updateTransaction(processingTransaction);
 
-            // Simulate processing time for cross-chain message
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            const messageID = messagetx.logs[1].topics[1];
+            console.log(messageID)
+
+            const igptx = await crossChainHyperlaneGasPayment(hyperlaneClient, dstChainInfo.chainId, testRecipientGasAmount, messageID, srcChainInfo.igpAddress);
+            console.log(igptx);
 
             // Mock successful destination chain transaction
             const completedTransaction: TransactionState = {
                 ...processingTransaction,
-                destinationChainTxHash: `0x${Math.random().toString(16).slice(2)}`,
+                destinationChainTxHash: messageID,
                 status: 'completed',
             };
             updateTransaction(completedTransaction);

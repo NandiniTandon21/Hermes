@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import {motion} from "framer-motion";
+import React, {useEffect, useState} from "react";
 
 interface TransactionProgressProps {
     sourceChain: string;
@@ -14,7 +14,7 @@ interface TransactionProgressProps {
 const chainLabels: Record<string, string> = {
     'ethereum-sepolia': 'ETH',
     'arbitrum-sepolia': 'ARB',
-    'optimism-sepolia': 'OP',
+    'fuji-testnet': 'SNOW',
     'polygon-amoy': 'POL',
     'base-sepolia': 'BASE',
 };
@@ -22,7 +22,7 @@ const chainLabels: Record<string, string> = {
 const chainColors: Record<string, string> = {
     'ethereum-sepolia': '#627EEA',
     'arbitrum-sepolia': '#28A0F0',
-    'optimism-sepolia': '#FF0420',
+    'fuji-testnet': '#FF0420',
     'polygon-amoy': '#8247E5',
     'base-sepolia': '#0052FF',
 };
@@ -78,7 +78,7 @@ export default function TransactionProgress({
             {/* Progress Line */}
             <div className="relative mb-6">
                 {/* Background Line */}
-                <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-500/50 rounded-full" />
+                <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-500/50 rounded-full"/>
 
                 {/* Progress Line */}
                 <motion.div
@@ -86,13 +86,13 @@ export default function TransactionProgress({
                     style={{
                         boxShadow: "0 0 6px #fff, 0 0 12px rgba(255,255,255,0.8)"
                     }}
-                    initial={{ width: "0%" }}
+                    initial={{width: "0%"}}
                     animate={{
                         width: status === 'sending' ? "50%" :
                             status === 'processing' ? "75%" :
                                 status === 'completed' ? "99%" : "0%"
                     }}
-                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                    transition={{duration: 0.8, ease: "easeInOut"}}
                 />
 
                 {/* Steps */}
@@ -123,8 +123,8 @@ export default function TransactionProgress({
                             >
                                 <div
                                     className={`w-3 h-3 rounded-full ${
-                                        step.completed ? 'bg-white' : 
-                                        step.active ? 'bg-white' : 'bg-white/40'
+                                        step.completed ? 'bg-white' :
+                                            step.active ? 'bg-white' : 'bg-white/40'
                                     }`}
                                     style={{
                                         boxShadow: step.active || step.completed ?
@@ -140,7 +140,7 @@ export default function TransactionProgress({
                                     step.active ? 'text-white' : 'text-white/60'
                                 }`}
                                    style={{
-                                      textShadow: step.active ? "0 0 5px rgba(255, 255, 255, 0.9)" : "none"
+                                       textShadow: step.active ? "0 0 5px rgba(255, 255, 255, 0.9)" : "none"
                                    }}
                                 >
                                     {step.label}
@@ -175,17 +175,17 @@ export default function TransactionProgress({
                             <div className="flex-1">
                                 <div className="flex items-center space-x-1">
                                     <p className="text-white text-xs font-medium"
-                                      style={{
-                                          textShadow: "0 0 4px rgba(255, 255, 255, 0.8)"
-                                      }}
+                                       style={{
+                                           textShadow: "0 0 4px rgba(255, 255, 255, 0.8)"
+                                       }}
                                     >
                                         {chainLabels[sourceChain]} Transaction ID:
                                     </p>
                                     {sourceChainTxHash ? (
                                         <p className="text-white/80 font-mono text-xs truncate max-w-[180px]"
-                                          style={{
-                                              textShadow: "0 0 3px rgba(255, 255, 255, 0.5)"
-                                          }}
+                                           style={{
+                                               textShadow: "0 0 3px rgba(255, 255, 255, 0.5)"
+                                           }}
                                         >
                                             {sourceChainTxHash}
                                         </p>
@@ -216,17 +216,17 @@ export default function TransactionProgress({
                             <div className="flex-1">
                                 <div className="flex items-center space-x-1">
                                     <p className="text-white text-xs font-medium"
-                                      style={{
-                                          textShadow: "0 0 4px rgba(255, 255, 255, 0.8)"
-                                      }}
+                                       style={{
+                                           textShadow: "0 0 4px rgba(255, 255, 255, 0.8)"
+                                       }}
                                     >
                                         {chainLabels[destinationChain]} Transaction ID:
                                     </p>
                                     {destinationChainTxHash ? (
                                         <p className="text-white/80 font-mono text-xs truncate max-w-[180px]"
-                                          style={{
-                                              textShadow: "0 0 3px rgba(255, 255, 255, 0.5)"
-                                          }}
+                                           style={{
+                                               textShadow: "0 0 3px rgba(255, 255, 255, 0.5)"
+                                           }}
                                         >
                                             {destinationChainTxHash}
                                         </p>

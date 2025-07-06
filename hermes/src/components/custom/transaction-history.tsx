@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { X, ArrowRightLeft, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence, useInView, Variants } from "framer-motion";
+import React, {useEffect, useState} from "react";
+import {X, ArrowRightLeft, ChevronDown} from "lucide-react";
+import {motion, AnimatePresence, useInView, Variants} from "framer-motion";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import {cn} from "@/lib/utils";
+import {Button} from "@/components/ui/button";
 import {TransactionState} from "@/components/custom/message-form";
 
 const chainLabels: Record<string, string> = {
     'ethereum-sepolia': 'Ethereum Sepolia',
     'arbitrum-sepolia': 'Arbitrum Sepolia',
-    'optimism-sepolia': 'Optimism Sepolia',
+    'fuji-testnet': 'Fuji Testnet',
     'polygon-amoy': 'Polygon Amoy',
     'base-sepolia': 'Base Sepolia',
 };
@@ -19,7 +19,7 @@ const chainLabels: Record<string, string> = {
 const chainColors: Record<string, string> = {
     'ethereum-sepolia': '#627EEA',
     'arbitrum-sepolia': '#28A0F0',
-    'optimism-sepolia': '#FF0420',
+    'fuji-testnet': '#FF0420',
     'polygon-amoy': '#8247E5',
     'base-sepolia': '#0052FF',
 };
@@ -39,7 +39,7 @@ export default function TransactionHistory({
     const [expandedTransaction, setExpandedTransaction] = useState<string | null>(null);
 
     const modalRef = React.useRef<HTMLDivElement>(null);
-    const isModalInView = useInView(modalRef, { once: true, amount: 0.2 });
+    const isModalInView = useInView(modalRef, {once: true, amount: 0.2});
 
     // Load transactions from localStorage on component mount
     useEffect(() => {
@@ -78,7 +78,7 @@ export default function TransactionHistory({
 
     const staggerDelay = 0.1;
     const fadeInVariants: Variants = {
-        hidden: { opacity: 0, y: 20 },
+        hidden: {opacity: 0, y: 20},
         visible: (i: number) => ({
             opacity: 1,
             y: 0,
@@ -97,9 +97,9 @@ export default function TransactionHistory({
             {isOpen && (
                 <motion.div
                     className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 backdrop-blur-md p-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    initial={{opacity: 0}}
+                    animate={{opacity: 1}}
+                    exit={{opacity: 0}}
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
                             onClose();
@@ -114,8 +114,8 @@ export default function TransactionHistory({
                         )}
                         initial="hidden"
                         animate={isModalInView ? "visible" : "hidden"}
-                        exit={{ scale: 0.95, y: 20, opacity: 0 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                        exit={{scale: 0.95, y: 20, opacity: 0}}
+                        transition={{type: "spring", damping: 25, stiffness: 300}}
                     >
                         {/* Header */}
                         <motion.div
@@ -132,7 +132,7 @@ export default function TransactionHistory({
                                 className="absolute top-6 right-6 p-1 rounded-full hover:bg-white/10 transition-colors"
                                 aria-label="Close"
                             >
-                                <X className="h-4 w-4 text-white" />
+                                <X className="h-4 w-4 text-white"/>
                             </button>
                         </motion.div>
 
@@ -144,7 +144,7 @@ export default function TransactionHistory({
                                     custom={1}
                                     variants={fadeInVariants}
                                 >
-                                    <ArrowRightLeft className="h-12 w-12 mb-4 opacity-50" />
+                                    <ArrowRightLeft className="h-12 w-12 mb-4 opacity-50"/>
                                     <p className="text-center">No transaction history found</p>
                                     <p className="text-center text-sm mt-2">Complete a cross-chain transaction to see history</p>
                                 </motion.div>
@@ -181,14 +181,20 @@ export default function TransactionHistory({
                                                         <div className="flex items-center gap-2">
                                                             <div
                                                                 className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                                                                style={{ backgroundColor: sourceColor, boxShadow: `0 0 8px ${sourceColor}80` }}
+                                                                style={{
+                                                                    backgroundColor: sourceColor,
+                                                                    boxShadow: `0 0 8px ${sourceColor}80`
+                                                                }}
                                                             >
                                                                 {chainLabels[transaction.sourceChain]?.charAt(0) || '?'}
                                                             </div>
-                                                            <ArrowRightLeft className="h-3 w-3 text-white/70" />
+                                                            <ArrowRightLeft className="h-3 w-3 text-white/70"/>
                                                             <div
                                                                 className="w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                                                                style={{ backgroundColor: destColor, boxShadow: `0 0 8px ${destColor}80` }}
+                                                                style={{
+                                                                    backgroundColor: destColor,
+                                                                    boxShadow: `0 0 8px ${destColor}80`
+                                                                }}
                                                             >
                                                                 {chainLabels[transaction.destinationChain]?.charAt(0) || '?'}
                                                             </div>
@@ -222,15 +228,16 @@ export default function TransactionHistory({
                                                 <AnimatePresence>
                                                     {isExpanded && (
                                                         <motion.div
-                                                            initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: 'auto', opacity: 1 }}
-                                                            exit={{ height: 0, opacity: 0 }}
-                                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                            initial={{height: 0, opacity: 0}}
+                                                            animate={{height: 'auto', opacity: 1}}
+                                                            exit={{height: 0, opacity: 0}}
+                                                            transition={{duration: 0.3, ease: "easeInOut"}}
                                                             className="border-t border-white/10 px-3 py-3 space-y-3 bg-black/30"
                                                         >
                                                             {/* Message */}
                                                             {transaction.message && (
-                                                                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded p-3">
+                                                                <div
+                                                                    className="bg-white/10 backdrop-blur-sm border border-white/10 rounded p-3">
                                                                     <p className="text-xs text-white/70 mb-1">Message:</p>
                                                                     <p className="text-sm text-white break-words">
                                                                         {transaction.message}
@@ -241,11 +248,15 @@ export default function TransactionHistory({
                                                             {/* Transaction Hashes */}
                                                             <div className="grid grid-cols-1 gap-2">
                                                                 {/* Source Chain TX */}
-                                                                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded p-3">
+                                                                <div
+                                                                    className="bg-white/10 backdrop-blur-sm border border-white/10 rounded p-3">
                                                                     <div className="flex items-center gap-2 mb-1">
                                                                         <div
                                                                             className="w-3 h-3 rounded-full"
-                                                                            style={{ backgroundColor: sourceColor, boxShadow: `0 0 6px ${sourceColor}80` }}
+                                                                            style={{
+                                                                                backgroundColor: sourceColor,
+                                                                                boxShadow: `0 0 6px ${sourceColor}80`
+                                                                            }}
                                                                         />
                                                                         <p className="text-xs text-white/70">
                                                                             {chainLabels[transaction.sourceChain]} Transaction: {truncateHash(transaction.sourceChainTxHash)}
@@ -254,11 +265,15 @@ export default function TransactionHistory({
                                                                 </div>
 
                                                                 {/* Destination Chain TX */}
-                                                                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded p-3">
+                                                                <div
+                                                                    className="bg-white/10 backdrop-blur-sm border border-white/10 rounded p-3">
                                                                     <div className="flex items-center gap-2 mb-1">
                                                                         <div
                                                                             className="w-3 h-3 rounded-full"
-                                                                            style={{ backgroundColor: destColor, boxShadow: `0 0 6px ${destColor}80` }}
+                                                                            style={{
+                                                                                backgroundColor: destColor,
+                                                                                boxShadow: `0 0 6px ${destColor}80`
+                                                                            }}
                                                                         />
                                                                         <p className="text-xs text-white/70">
                                                                             {chainLabels[transaction.destinationChain]} Transaction: {truncateHash(transaction.destinationChainTxHash)}
@@ -269,7 +284,8 @@ export default function TransactionHistory({
 
                                                             {/* Error Message */}
                                                             {transaction.error && (
-                                                                <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded p-3">
+                                                                <div
+                                                                    className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded p-3">
                                                                     <p className="text-xs text-red-300 mb-1">Error:</p>
                                                                     <p className="text-sm text-red-200 break-words">
                                                                         {transaction.error}
@@ -301,7 +317,7 @@ export default function TransactionHistory({
                                         className="relative"
                                         whileHover={{
                                             scale: 1.05,
-                                            transition: { duration: 0.2 }
+                                            transition: {duration: 0.2}
                                         }}
                                     >
                                         <motion.div
@@ -333,7 +349,7 @@ export default function TransactionHistory({
                                     className="relative"
                                     whileHover={{
                                         scale: 1.05,
-                                        transition: { duration: 0.2 }
+                                        transition: {duration: 0.2}
                                     }}
                                 >
                                     <motion.div
