@@ -195,7 +195,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
                     </div>
 
                     {/* Icon Container */}
-                    <div className={cn("relative flex-shrink-0", iconSizeClass)}>
+                    <div
+                        className={cn(
+                            "relative flex-shrink-0",
+                            iconSizeClass,
+                            iconPosition === "right" ? "ml-2" : "mr-2"
+                        )}
+                    >
                         <CustomIcon
                             className={cn(iconSizeClass, `absolute transition-all duration-1000 ${
                                 isHovered ? "opacity-0 -translate-y-8" : "opacity-100"
