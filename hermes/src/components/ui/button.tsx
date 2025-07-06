@@ -57,28 +57,37 @@ const buttonVariants = cva(
     }
 )
 
-interface SlideButtonProps {
-    name1: string
-    name2: string
-    slideDelay?: number
-    maxWidth?: string
-    icon?: React.ComponentType<{ className?: string }>
-    iconPosition?: "left" | "right"
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  name1?: string;
+  name2?: string;
+  slideDelay?: number;
+  maxWidth?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  iconPosition?: "left" | "right";
 }
 
-function Button({
-                    className,
-                    variant,
-                    size,
-                    radius,
-                    asChild = false,
-                    children,
-                    onClick,
-                    ...props
-                }: React.ComponentProps<"button"> &
-    VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-} & (variant extends "slide" ? SlideButtonProps : {})) {
+interface SlideButtonProps {
+    name1?: string;
+    name2?: string;
+    slideDelay?: number;
+    maxWidth?: string;
+    icon?: React.ComponentType<{ className?: string }>;
+    iconPosition?: "left" | "right";
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
+    className,
+    variant,
+    size,
+    radius,
+    asChild = false,
+    children,
+    onClick,
+    name1,
+    name2,
+    ...props
+}, ref) => {
 
     const [isHovered, setIsHovered] = React.useState(false)
     const [isClicked, setIsClicked] = React.useState(false)
@@ -100,10 +109,10 @@ function Button({
 
     // For slide variant, render custom content
     if (variant === "slide") {
-        const { name1, name2, maxWidth = "max-w-sm", icon: CustomIcon = ArrowRight, iconPosition = "right" } = props as SlideButtonProps
+        const { maxWidth = "max-w-sm", icon: CustomIcon = ArrowRight, iconPosition = "right" } = props as SlideButtonProps
 
         // text size based on button size
-        const getTextSize = (size: string | undefined) => {
+        const getTextSize = (size: string | null | undefined) => {
             switch (size) {
                 case "xs": return "text-xs"
                 case "sm": return "text-xs"
@@ -116,7 +125,7 @@ function Button({
         }
 
         // icon size based on button size
-        const getIconSize = (size: string | undefined) => {
+        const getIconSize = (size: string | null | undefined) => {
             switch (size) {
                 case "xs": return "h-3 w-3"
                 case "sm": return "h-4 w-4"
@@ -129,7 +138,7 @@ function Button({
         }
 
         // padding based on button size for slide variant
-        const getSlidePadding = (size: string | undefined) => {
+        const getSlidePadding = (size: string | null | undefined) => {
             switch (size) {
                 case "xs": return "px-3 py-1.5"
                 case "sm": return "px-4 py-2"
@@ -227,6 +236,8 @@ function Button({
             {children}
         </Comp>
     )
-}
+})
+
+Button.displayName = "Button"
 
 export { Button, buttonVariants }

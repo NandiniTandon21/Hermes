@@ -36,7 +36,7 @@ export function AnimatedGrid({
   } | null>(null)
   const [spawnedTokens, setSpawnedTokens] = useState<Set<string>>(new Set())
 
-  const tokenIcons = [
+  const tokenIcons: { symbol: string; variant: 'branded' }[] = [
     { symbol: 'eth', variant: 'branded' },
     { symbol: 'btc', variant: 'branded' },
     { symbol: 'sol', variant: 'branded' },

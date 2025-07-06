@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { X, ArrowRightLeft, ChevronDown } from "lucide-react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView, Variants } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { TransactionState } from "@/app/dashboard/page";
+import {TransactionState} from "@/components/custom/message-form";
 
 const chainLabels: Record<string, string> = {
     'ethereum-sepolia': 'Ethereum Sepolia',
@@ -77,7 +77,7 @@ export default function TransactionHistory({
     };
 
     const staggerDelay = 0.1;
-    const fadeInVariants = {
+    const fadeInVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
         visible: (i: number) => ({
             opacity: 1,

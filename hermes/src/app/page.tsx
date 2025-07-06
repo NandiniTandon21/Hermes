@@ -7,7 +7,7 @@ import { motion, useScroll, useTransform, useInView, AnimatePresence } from "fra
 import { AnimatedGrid } from "@/components/ui/animated-grid";
 import TransactionHistory from "@/components/custom/transaction-history";
 import TransactionProgress from "@/components/custom/transaction-progress";
-import { CrossChainMessageForm, TransactionState } from "@/app/dashboard/page";
+import {CrossChainMessageForm, TransactionState} from "@/components/custom/message-form";
 
 export default function Home() {
     const heroRef = useRef<HTMLDivElement>(null);

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import {motion, useInView} from "framer-motion";
+import {motion, useInView, Variants} from "framer-motion";
 
 import {cn} from "@/lib/utils"
 import {Input} from "@/components/ui/input"
@@ -103,7 +103,7 @@ export const CrossChainMessageForm = React.forwardRef<
     const isFormInView = useInView(formRef, {once: true, amount: 0.2});
 
     const staggerDelay = 0.1;
-    const fadeInVariants = {
+    const fadeInVariants: Variants = {
         hidden: {opacity: 0, y: 20},
         visible: (i: number) => ({
             opacity: 1,
@@ -120,10 +120,11 @@ export const CrossChainMessageForm = React.forwardRef<
         e.preventDefault();
 
         if (!selectedSource || !selectedDestination || !messageText.trim()) {
-            const errorTransaction = {
+            const errorTransaction: TransactionState = {
                 ...transaction,
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
+                message: messageText,
                 status: 'error',
                 error: 'Please fill out all fields and ensure the message is not empty.',
                 timestamp: Date.now()
@@ -134,10 +135,11 @@ export const CrossChainMessageForm = React.forwardRef<
         }
 
         if (selectedSource === selectedDestination) {
-            const errorTransaction = {
+            const errorTransaction: TransactionState = {
                 ...transaction,
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
+                message: messageText,
                 status: 'error',
                 error: 'Source and destination chains must be different',
                 timestamp: Date.now()
@@ -148,10 +150,11 @@ export const CrossChainMessageForm = React.forwardRef<
         }
 
         if (!isAllowedRoute) {
-            const errorTransaction = {
+            const errorTransaction: TransactionState = {
                 ...transaction,
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
+                message: messageText,
                 status: 'error',
                 error: 'Selected route is not allowed',
                 timestamp: Date.now()
@@ -201,10 +204,11 @@ export const CrossChainMessageForm = React.forwardRef<
             saveTransactionToHistory(completedTransaction);
 
         } catch (error) {
-            const errorTransaction = {
+            const errorTransaction: TransactionState = {
                 ...transaction,
                 sourceChain: selectedSource,
                 destinationChain: selectedDestination,
+                message: messageText,
                 status: 'error',
                 error: error instanceof Error ? error.message : 'An unknown error occurred',
                 timestamp: Date.now()
@@ -264,7 +268,6 @@ export const CrossChainMessageForm = React.forwardRef<
             initial="hidden"
             animate={isFormInView ? "visible" : "hidden"}
             onSubmit={handleSubmit}
-            {...props}
         >
             {/* Header */}
             <motion.div
@@ -371,13 +374,3 @@ export const CrossChainMessageForm = React.forwardRef<
         </motion.form>
     )
 })
-
-export default function DashboardPage() {
-    return (
-        <div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-black to-gray-800">
-            <div className="container py-10">
-                <CrossChainMessageForm/>
-            </div>
-        </div>
-    )
-}
