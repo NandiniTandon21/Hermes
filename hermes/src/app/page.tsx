@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { ArrowDownCircle, History } from "lucide-react";
+import { ArrowDownCircle, History as HistoryIcon } from "lucide-react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 
 import { AnimatedGrid } from "@/components/ui/animated-grid";
 import TransactionHistory from "@/components/custom/transaction-history";
 import TransactionProgress from "@/components/custom/transaction-progress";
 import {CrossChainMessageForm, TransactionState} from "@/components/custom/message-form";
+import { Navbar } from "@/components/custom/navbar";
 
 export default function Home() {
     const heroRef = useRef<HTMLDivElement>(null);
@@ -44,6 +45,10 @@ export default function Home() {
         formSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    const scrollToTop = () => {
+        heroRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     const formComponentRef = useRef<any>(null);
 
     const resetTransaction = () => {
@@ -60,10 +65,17 @@ export default function Home() {
         if (formComponentRef.current && formComponentRef.current.resetForm) {
             formComponentRef.current.resetForm();
         }
+        scrollToForm();
     };
 
     return (
         <div className="w-full font-[family-name:var(--font-geist-sans)] overflow-x-hidden">
+            <Navbar
+                onLogoClick={scrollToTop}
+                onStartNewTransaction={resetTransaction}
+                onShowHistory={() => setIsHistoryOpen(true)}
+                isNewTransactionAllowed={transactionState.status !== 'sending' && transactionState.status !== 'processing'}
+            />
             {/* Hero Section */}
             <motion.section
                 ref={heroRef}
@@ -73,7 +85,7 @@ export default function Home() {
                 {/* Split layout container */}
                 <div className="flex flex-col lg:flex-row min-h-screen w-full">
                     {/* Left half */}
-                    <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-16 relative z-10">
+                    <div className="w-full lg:w-1/2 flex flex-col justify-center items-center text-center p-8 lg:p-16 relative z-10">
                         <motion.h1
                             initial={{ opacity: 0, y: -50 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -86,7 +98,7 @@ export default function Home() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="text-xl md:text-2xl mt-6 max-w-md text-center text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
+                            className="text-xl md:text-2xl mt-6 max-w-md text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]"
                         >
                             Bridging chains with elegant messaging solutions
                         </motion.p>
@@ -445,7 +457,7 @@ export default function Home() {
                             className="px-8 py-4 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all duration-300 text-base relative z-10 flex items-center gap-2"
                             onClick={() => setIsHistoryOpen(true)}
                         >
-                            <History className="h-5 w-5" />
+                            <HistoryIcon className="h-5 w-5" />
                             View History
                         </motion.button>
                     </motion.div>
