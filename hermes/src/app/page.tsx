@@ -1,14 +1,16 @@
+
+
 "use client";
 
 import React, { useRef, useState } from "react";
 import { ArrowDownCircle, History as HistoryIcon } from "lucide-react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 
+import { Navbar } from "@/components/custom/navbar";
 import { AnimatedGrid } from "@/components/ui/animated-grid";
 import TransactionHistory from "@/components/custom/transaction-history";
 import TransactionProgress from "@/components/custom/transaction-progress";
 import {CrossChainMessageForm, TransactionState} from "@/components/custom/message-form";
-import { Navbar } from "@/components/custom/navbar";
 
 export default function Home() {
     const heroRef = useRef<HTMLDivElement>(null);
@@ -27,9 +29,26 @@ export default function Home() {
     });
 
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const transactionProgressRef = useRef<HTMLDivElement>(null);
+    const startNewTransactionBtnRef = useRef<HTMLButtonElement>(null);
 
     const handleTransactionUpdate = (transaction: TransactionState) => {
         setTransactionState(transaction);
+
+        // Scroll to transaction progress when a transaction starts on mobile devices
+        if (transaction.status === 'sending' && window.innerWidth < 768 && transactionProgressRef.current) {
+            setTimeout(() => {
+                transactionProgressRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
+        }
+
+        // Focus on the "Start New Transaction" button when transaction completes
+        if (transaction.status === 'completed' && startNewTransactionBtnRef.current) {
+            setTimeout(() => {
+                startNewTransactionBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                startNewTransactionBtnRef.current?.focus();
+            }, 500);
+        }
     };
 
     const { scrollYProgress } = useScroll({
@@ -69,7 +88,7 @@ export default function Home() {
     };
 
     return (
-        <div className="w-full font-[family-name:var(--font-geist-sans)] overflow-x-hidden">
+        <div className="w-full font-[family-name:var(--font-geist-sans)] overflow-x-hidden pt-16">
             <Navbar
                 onLogoClick={scrollToTop}
                 onStartNewTransaction={resetTransaction}
@@ -85,7 +104,7 @@ export default function Home() {
                 {/* Split layout container */}
                 <div className="flex flex-col lg:flex-row min-h-screen w-full">
                     {/* Left half */}
-                    <div className="w-full lg:w-1/2 flex flex-col justify-center items-center text-center p-8 lg:p-16 relative z-10">
+                    <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-16 relative z-10">
                         <motion.h1
                             initial={{ opacity: 0, y: -50 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -213,6 +232,7 @@ export default function Home() {
                         <AnimatePresence mode="wait">
                             {transactionState.status !== 'idle' && (
                                 <motion.div
+                                    ref={transactionProgressRef}
                                     key="transaction-progress"
                                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -347,17 +367,18 @@ export default function Home() {
 
             {/* Start New Transaction Button */}
             {transactionState.status === 'completed' && (
-                <div className="container mx-auto px-4 -mt-24 mb-20 flex justify-center gap-4">
+                <div className="container mx-auto px-4 -mt-24 mb-8 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4">
+                    {/* Start New Transaction Button */}
                     <motion.div
-                        className="relative"
+                        className="relative w-full sm:w-auto"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.4 }}
                     >
                         <motion.div
-                            className="absolute -inset-0.5 rounded-lg z-0 opacity-30"
+                            className="absolute inset-0 rounded-lg z-0 opacity-10"
                             style={{
-                                background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)",
+                                background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
                                 backgroundSize: "200% 100%",
                             }}
                             animate={{
@@ -371,15 +392,16 @@ export default function Home() {
                         />
 
                         <motion.button
+                            ref={startNewTransactionBtnRef}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{
                                 opacity: 1,
                                 y: 0,
                                 scale: [1, 1.02, 1],
                                 boxShadow: [
-                                    "0 0 10px rgba(255, 255, 255, 0.1)",
-                                    "0 0 15px rgba(255, 255, 255, 0.2)",
-                                    "0 0 10px rgba(255, 255, 255, 0.1)"
+                                    "0 0 15px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.1)",
+                                    "0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 255, 255, 0.15)",
+                                    "0 0 15px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.1)"
                                 ]
                             }}
                             transition={{
@@ -397,7 +419,7 @@ export default function Home() {
                                     times: [0, 0.5, 1]
                                 }
                             }}
-                            className="px-8 py-4 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all duration-300 text-base relative z-10"
+                            className="w-full sm:w-auto px-6 py-3 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all duration-300 text-sm sm:text-base relative z-10 min-w-[180px] text-center"
                             onClick={resetTransaction}
                         >
                             Start New Transaction
@@ -406,15 +428,15 @@ export default function Home() {
 
                     {/* View History Button */}
                     <motion.div
-                        className="relative"
+                        className="relative w-full sm:w-auto"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.4, delay: 0.2 }}
                     >
                         <motion.div
-                            className="absolute -inset-0.5 rounded-lg z-0 opacity-30"
+                            className="absolute inset-0 rounded-lg z-0 opacity-10"
                             style={{
-                                background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)",
+                                background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
                                 backgroundSize: "200% 100%",
                             }}
                             animate={{
@@ -434,9 +456,9 @@ export default function Home() {
                                 y: 0,
                                 scale: [1, 1.02, 1],
                                 boxShadow: [
-                                    "0 0 10px rgba(255, 255, 255, 0.1)",
-                                    "0 0 15px rgba(255, 255, 255, 0.2)",
-                                    "0 0 10px rgba(255, 255, 255, 0.1)"
+                                    "0 0 15px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.1)",
+                                    "0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 255, 255, 0.15)",
+                                    "0 0 15px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.1)"
                                 ]
                             }}
                             transition={{
@@ -454,15 +476,22 @@ export default function Home() {
                                     times: [0, 0.5, 1]
                                 }
                             }}
-                            className="px-8 py-4 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all duration-300 text-base relative z-10 flex items-center gap-2"
+                            className="w-full sm:w-auto px-6 py-3 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all duration-300 text-sm sm:text-base relative z-10 flex items-center justify-center gap-2 min-w-[180px]"
                             onClick={() => setIsHistoryOpen(true)}
                         >
-                            <HistoryIcon className="h-5 w-5" />
+                            <HistoryIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                             View History
                         </motion.button>
                     </motion.div>
                 </div>
             )}
+
+            {/* Footer */}
+            <footer className="w-full py-8 flex justify-center items-center">
+                <div className="text-center text-sm text-white/80">
+                    Powered by <span className="font-medium text-white">Hermes</span> cross-chain messaging
+                </div>
+            </footer>
         </div>
     );
 }

@@ -362,15 +362,6 @@ export const CrossChainMessageForm = React.forwardRef<
                     />
                 </motion.div>
             </div>
-
-            {/* Footer */}
-            <motion.div
-                className="text-center text-sm"
-                custom={5}
-                variants={fadeInVariants}
-            >
-                Powered by <span className="font-medium">Hermes</span> cross-chain messaging
-            </motion.div>
         </motion.form>
     )
 })
